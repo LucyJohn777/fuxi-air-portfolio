@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FuXi-Air 城市空气质量预测产品</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js" integrity="sha384-pPi0zxBAoDu6+JXW/C68UZLvBUUtU+7zonhif43rqj7pxsGyqyqzcian2Rj37Rss" crossorigin="anonymous"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #eef1f5;
+    color: #1f2937;
+    min-width: 1280px;
+    font-size: 13px;
+  }
+
+  /* ===== 顶部产品介绍 Banner ===== */
+  .product-banner {
+    background: linear-gradient(135deg, #0a2540 0%, #1e40af 45%, #2563eb 100%);
+    color: #fff;
+    padding: 26px 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .product-banner::after {
+    content: '';
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(96,165,250,0.25) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .banner-left { position: relative; z-index: 1; }
+  .banner-left h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .banner-left p {
+    font-size: 13px;
+    opacity: 0.8;
+    font-weight: 300;
+  }
+  .banner-stats {
+    display: flex;
+    gap: 36px;
+    position: relative;
+    z-index: 1;
+  }
+  .stat-item { text-align: center; }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .stat-label { font-size: 11px; opacity: 0.7; margin-top: 3px; }
+
+  /* ===== 数据真实性声明 ===== */
+  .data-notice {
+    background: linear-gradient(90deg, #fffbeb, #fef3c7);
+    border-bottom: 1px solid #fde68a;
+    padding: 8px 36px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #92400e;
+  }
+  .data-notice .notice-icon {
+    width: 18px; height: 18px;
+    background: #f59e0b;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ===== 产品概览区 ===== */
+  .product-overview {
+    background: #fff;
+    border-bottom: 1px solid #e2e6ec;
+    padding: 20px 36px 24px;
+  }
+  .overview-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .overview-title::before {
+    content: '';
+    width: 3px; height: 16px;
+    background: linear-gradient(180deg, #2563eb, #1e40af);
+    border-radius: 2px;
+  }
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .overview-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .overview-card h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .overview-card h4 .tag {
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .tag-user { background: #dbeafe; color: #1e40af; }
+  .tag-pain { background: #fee2e2; color: #991b1b; }
+  .tag-solution { background: #d1fae5; color: #065f46; }
+  .overview-card p {
+    font-size: 12px;
+    color: #4b5563;
+    line-height: 1.7;
+  }
+  .overview-card p strong { color: #1f2937; }
+  .flow-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 20px;
+  }
+  .flow-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+  }
+  .flow-steps {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+  }
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+  }
+  .flow-step-num {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    box-shadow: 0 2px 6px rgba(37,99,235,0.3);
+  }
+  .flow-step-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f2937;
+    text-align: center;
+  }
+  .flow-step-desc {
+    font-size: 11px;
+    color: #6b7280;
+    text-align: center;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .flow-arrow {
+    color: #9ca3af;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin: 0 4px;
+    margin-bottom: 20px;
+  }
+
+  /* ===== 顶部操作栏 ===== */
+  .top-bar {
+    background: #fff;
+    border-bottom: 1px solid #e2e6ec;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .time-granularity {
+    display: flex;
+    background: #f1f3f7;
+    border-radius: 6px;
+    overflow: hidden;
+    padding: 2px;
+  }
+  .time-granularity button {
+    border: none;
+    background: transparent;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #5a6472;
+    font-family: inherit;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+  .time-granularity button.active {
+    background: #2563eb;
+    color: #fff;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(37,99,235,0.3);
+  }
+  .time-picker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #d8dde5;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #374151;
+    background: #fafbfc;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .time-picker:hover { border-color: #93c5fd; }
+  .btn-query {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 7px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(37,99,235,0.25);
+  }
+  .btn-query:hover { background: #1d4ed8; box-shadow: 0 2px 6px rgba(37,99,235,0.35); }
+
+  /* 下拉按钮 */
+  .dropdown-wrap { position: relative; }
+  .dropdown-btn {
+    border: 1px solid #d8dde5;
+    background: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #374151;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .dropdown-btn:hover { border-color: #93c5fd; background: #f8fafc; }
+  .dropdown-btn.active { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+  .dropdown-btn .arrow {
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid currentColor;
+    transition: transform 0.2s;
+  }
+  .dropdown-btn.active .arrow { transform: rotate(180deg); }
+  .dropdown-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: #fff;
+    border: 1px solid #e2e6ec;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 100;
+    min-width: 200px;
+    padding: 8px 0;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  .dropdown-panel.show { display: block; }
+  .dropdown-panel .dp-header {
+    padding: 8px 14px;
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #f1f3f7;
+    margin-bottom: 4px;
+  }
+  .dropdown-panel .dp-item {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #374151;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+  }
+  .dropdown-panel .dp-item:hover { background: #f8fafc; }
+  .dropdown-panel .dp-item.active { color: #2563eb; font-weight: 500; background: #eff6ff; }
+  .dropdown-panel .dp-item .check {
+    width: 16px; height: 16px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .dropdown-panel .dp-item.active .check {
+    background: #2563eb;
+    border-color: #2563eb;
+  }
+  .dropdown-panel .dp-item.active .check::after {
+    content: '';
+    width: 4px; height: 8px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+  }
+  .dropdown-panel .dp-divider {
+    height: 1px;
+    background: #f1f3f7;
+    margin: 4px 0;
+  }
+
+  .top-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #9ca3af;
+    font-size: 12px;
+  }
+  .top-right span { cursor: pointer; transition: color 0.2s; }
+  .top-right span:hover { color: #2563eb; }
+
+  /* ===== 筛选栏 ===== */
+  .filter-bar {
+    background: #fff;
+    border-bottom: 1px solid #e2e6ec;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .pollutant-tabs { display: flex; gap: 2px; background: #f1f3f7; border-radius: 6px; padding: 2px; }
+  .pollutant-tabs button {
+    border: none;
+    background: transparent;
+    padding: 5px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #5a6472;
+    font-family: inherit;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .pollutant-tabs button:hover { color: #2563eb; }
+  .pollutant-tabs button.active {
+    background: #2563eb;
+    color: #fff;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(37,99,235,0.3);
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #6b7280;
+  }
+  .filter-select {
+    border: 1px solid #d8dde5;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: #374151;
+    background: #fafbfc;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .filter-select:hover { border-color: #93c5fd; }
+  .eval-days { display: flex; gap: 2px; background: #f1f3f7; border-radius: 6px; padding: 2px; }
+  .eval-days button {
+    border: none;
+    background: transparent;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #5a6472;
+    font-family: inherit;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .eval-days button:hover { color: #2563eb; }
+  .eval-days button.active {
+    background: #2563eb;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* ===== 主内容区 ===== */
+  .main-content { padding: 14px 20px; }
+  .chart-section {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e2e6ec;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .section-tabs {
+    display: flex;
+    border-bottom: 1px solid #eef1f5;
+    padding: 0 20px;
+    background: #fafbfc;
+  }
+  .section-tabs button {
+    border: none;
+    background: transparent;
+    padding: 12px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #6b7280;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+  .section-tabs button:hover { color: #2563eb; }
+  .section-tabs button.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+    font-weight: 600;
+  }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  .chart-body { padding: 16px 20px 8px; }
+  .chart-row {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 20px;
+  }
+  .chart-container { width: 100%; height: 360px; }
+  .scatter-container { width: 100%; height: 360px; }
+
+  /* ===== 图例 ===== */
+  .legend-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 8px 20px 12px;
+    font-size: 12px;
+    color: #4b5563;
+    border-top: 1px solid #f1f3f7;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    user-select: none;
+    opacity: 1;
+    transition: opacity 0.2s;
+    padding: 2px 4px;
+    border-radius: 3px;
+  }
+  .legend-item:hover { background: #f8fafc; }
+  .legend-item.inactive { opacity: 0.35; }
+  .legend-item.highlight { font-weight: 600; }
+  .legend-line {
+    width: 20px;
+    height: 3px;
+    border-radius: 2px;
+  }
+  .legend-bar-bg {
+    width: 16px;
+    height: 10px;
+    background: #d1d5db;
+    border-radius: 1px;
+  }
+
+  /* ===== 时间轴滑块 ===== */
+  .time-slider { padding: 4px 24px 14px; }
+  .time-slider-track {
+    height: 6px;
+    background: #e8ecf1;
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+  }
+  .time-slider-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #93c5fd, #2563eb);
+    border-radius: 3px;
+    width: 70%;
+    transition: width 0.15s;
+  }
+  .time-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  /* ===== 准确率评估表 ===== */
+  .accuracy-section {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e2e6ec;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .accuracy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #eef1f5;
+    background: #fafbfc;
+  }
+  .accuracy-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .accuracy-title::before {
+    content: '';
+    width: 3px;
+    height: 16px;
+    background: linear-gradient(180deg, #2563eb, #1e40af);
+    border-radius: 2px;
+  }
+  .checkbox-group {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: #4b5563;
+  }
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+  .btn-export {
+    border: 1px solid #d8dde5;
+    background: #fff;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #4b5563;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+  }
+  .btn-export:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+  .table-wrapper { overflow-x: auto; }
+  table.accuracy-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  table.accuracy-table th,
+  table.accuracy-table td {
+    border: 1px solid #eef1f5;
+    padding: 8px 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  table.accuracy-table thead th {
+    background: #f5f7fa;
+    font-weight: 600;
+    color: #374151;
+  }
+  table.accuracy-table thead th.group-header {
+    background: #eef2f7;
+    font-size: 13px;
+  }
+  table.accuracy-table tbody tr { transition: background 0.15s; }
+  table.accuracy-table tbody tr:hover { background: #f8fafc; }
+  table.accuracy-table td.model-name {
+    text-align: left;
+    font-weight: 500;
+    color: #1f2937;
+    background: #fafbfc;
+    min-width: 130px;
+  }
+  table.accuracy-table td.highlight-row {
+    background: #eff6ff;
+    font-weight: 600;
+  }
+  table.accuracy-table tr:hover td.highlight-row { background: #dbeafe; }
+  .rate-good { color: #059669; font-weight: 600; }
+  .rate-bad { color: #dc2626; }
+  .rate-warn { color: #d97706; }
+
+  /* ===== 计算指标页面 ===== */
+  .metrics-body { padding: 20px; }
+  .metrics-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+  }
+  .model-checklist {
+    background: #f8fafc;
+    border: 1px solid #e2e6ec;
+    border-radius: 10px;
+    padding: 14px;
+    max-height: 560px;
+    overflow-y: auto;
+  }
+  .checklist-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e6ec;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .checklist-title::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: #2563eb;
+    border-radius: 2px;
+  }
+  .checklist-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .checklist-actions button {
+    flex: 1;
+    border: 1px solid #d8dde5;
+    background: #fff;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    cursor: pointer;
+    color: #4b5563;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .checklist-actions button:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+  .model-check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 12px;
+    transition: background 0.15s;
+  }
+  .model-check-item:hover { background: #eef2f7; }
+  .model-check-item input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: #2563eb;
+    width: 14px;
+    height: 14px;
+  }
+  .model-check-item .color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .model-check-item.highlight-item { font-weight: 600; color: #1e40af; background: #eff6ff; }
+  .metrics-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .metric-card {
+    background: #fff;
+    border: 1px solid #e2e6ec;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    transition: box-shadow 0.2s;
+  }
+  .metric-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .metric-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .metric-card-title .badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .badge-rmse { background: #dbeafe; color: #1e40af; }
+  .badge-r { background: #dcfce7; color: #166534; }
+  .badge-mae { background: #fef3c7; color: #92400e; }
+  .badge-bias { background: #fce7f3; color: #9d174d; }
+  .metric-chart { width: 100%; height: 210px; }
+
+  /* ===== 竞品对比区 ===== */
+  .compare-section {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e2e6ec;
+    margin-top: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .compare-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid #eef1f5;
+    background: #fafbfc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .compare-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .compare-title::before {
+    content: '';
+    width: 3px; height: 16px;
+    background: linear-gradient(180deg, #2563eb, #1e40af);
+    border-radius: 2px;
+  }
+  .compare-badge {
+    font-size: 11px;
+    color: #6b7280;
+    background: #f1f3f7;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .compare-table th, .compare-table td {
+    padding: 12px 16px;
+    text-align: center;
+    border-bottom: 1px solid #f1f3f7;
+  }
+  .compare-table thead th {
+    background: #f8fafc;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .compare-table thead th.col-dim { width: 180px; color: #6b7280; font-weight: 500; }
+  .compare-table thead th.col-cmaq { color: #6b7280; }
+  .compare-table thead th.col-fuxi { color: #1e40af; background: #eff6ff; }
+  .compare-table td.dim {
+    text-align: left;
+    color: #4b5563;
+    font-weight: 500;
+    background: #fafbfc;
+  }
+  .compare-table td.cmaq { color: #6b7280; }
+  .compare-table td.fuxi {
+    color: #1e40af;
+    font-weight: 600;
+    background: #f8faff;
+  }
+  .compare-table td.fuxi .win {
+    display: inline-block;
+    font-size: 10px;
+    background: #d1fae5;
+    color: #065f46;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+    font-weight: 500;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  /* ===== 迭代闭环区（精致版）===== */
+  .iteration-section {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e6ec;
+    margin-top: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  .iteration-header {
+    padding: 18px 24px 14px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .iteration-header-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+  .iteration-header-icon svg { width: 20px; height: 20px; fill: #fff; }
+  .iteration-header-text h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e3a5f;
+    margin-bottom: 2px;
+  }
+  .iteration-header-text p {
+    font-size: 12px;
+    color: #64748b;
+  }
+  .iteration-body {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 48px 1fr 48px 1fr;
+    gap: 0;
+    align-items: stretch;
+  }
+  .iter-card {
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    transition: transform 0.25s, box-shadow 0.25s;
+    display: flex;
+    flex-direction: column;
+  }
+  .iter-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  }
+  .iter-card.pain {
+    background: linear-gradient(160deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid #fecaca;
+  }
+  .iter-card.decision {
+    background: linear-gradient(160deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+  }
+  .iter-card.result {
+    background: linear-gradient(160deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1px solid #bbf7d0;
+  }
+  .iter-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .iter-card-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  .pain .iter-card-icon { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .decision .iter-card-icon { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+  .result .iter-card-icon { background: linear-gradient(135deg, #22c55e, #16a34a); }
+  .iter-card-icon svg { width: 22px; height: 22px; fill: #fff; }
+  .iter-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .pain .iter-card-title { color: #991b1b; }
+  .decision .iter-card-title { color: #1e3a8a; }
+  .result .iter-card-title { color: #166534; }
+  .iter-card-subtitle {
+    font-size: 11px;
+    margin-top: 2px;
+    opacity: 0.7;
+  }
+  .iter-card-list {
+    list-style: none;
+    flex: 1;
+  }
+  .iter-card-list li {
+    font-size: 12.5px;
+    color: #374151;
+    line-height: 1.65;
+    padding: 7px 0;
+    padding-left: 22px;
+    position: relative;
+    border-bottom: 1px dashed rgba(0,0,0,0.08);
+  }
+  .iter-card-list li:last-child { border-bottom: none; }
+  .iter-card-list li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 13px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #fff;
+    font-weight: 700;
+  }
+  .pain .iter-card-list li::before { background: #ef4444; content: '!'; }
+  .decision .iter-card-list li::before { background: #3b82f6; content: '→'; }
+  .result .iter-card-list li::before { background: #22c55e; content: '✓'; }
+  .iter-card-list li strong { color: #111827; }
+  .iter-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 8px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .tag-must { background: #dbeafe; color: #1e40af; }
+  .tag-should { background: #fef3c7; color: #92400e; }
+  .tag-down { background: #f3f4f6; color: #6b7280; }
+  .iter-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .iter-arrow-circle {
+    width: 36px; height: 36px;
+    background: #fff;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .iter-footer {
+    padding: 14px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .iter-footer-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: #475569;
+  }
+  .iter-footer-item .num {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e40af;
+  }
+  .iter-footer-item .label { color: #64748b; }
+
+  /* ===== 产品亮点区 ===== */
+  .highlights-section {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e2e6ec;
+    padding: 24px 28px;
+    margin-top: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .highlights-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .highlights-title::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: linear-gradient(180deg, #2563eb, #1e40af);
+    border-radius: 2px;
+  }
+  .highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .highlight-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.25s;
+    cursor: default;
+  }
+  .highlight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(37,99,235,0.12);
+    border-color: #bfdbfe;
+  }
+  .highlight-icon {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 12px;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+  }
+  .highlight-icon svg { width: 22px; height: 22px; fill: #fff; }
+  .highlight-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e40af;
+    line-height: 1.2;
+  }
+  .highlight-label {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 90;
+  }
+  .overlay.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="product-banner">
+  <div class="banner-left">
+    <h1>FuXi-Air 城市空气质量预测产品</h1>
+    <p>区域—城市级 AI 空气质量预报系统 · 已部署上海市环境监测中心业务运行</p>
+  </div>
+  <div class="banner-stats">
+    <div class="stat-item"><div class="stat-value">200x</div><div class="stat-label">效率提升</div></div>
+    <div class="stat-item"><div class="stat-value">37%</div><div class="stat-label">O3 RMSE 降低</div></div>
+    <div class="stat-item"><div class="stat-value">30s</div><div class="stat-label">单次预报耗时</div></div>
+    <div class="stat-item"><div class="stat-value">10月</div><div class="stat-label">稳定业务运行</div></div>
+  </div>
+</div>
+
+<div class="data-notice">
+  <span class="notice-icon">!</span>
+  <span>本演示页数据为模拟展示，用于产品交互与功能演示；真实业务数据因保密要求不对外提供。</span>
+</div>
+
+<div class="product-overview">
+  <div class="overview-title">产品概览</div>
+  <div class="overview-grid">
+    <div class="overview-card">
+      <h4>目标用户 <span class="tag tag-user">B端</span></h4>
+      <p>上海市环境监测中心<strong>空气质量预报员</strong>，日常需每日发布未来 7 天空气质量预报，支撑污染调度与应急响应决策。</p>
+    </div>
+    <div class="overview-card">
+      <h4>核心痛点 <span class="tag tag-pain">业务痛点</span></h4>
+      <p>传统数值模式（CMAQ）单次预报需<strong>2-3 小时</strong>，依赖高性能计算集群；时间分辨率仅 6 小时，一天仅能起报 2 次，无法捕捉臭氧午后峰值，极端污染预警易漏报。</p>
+    </div>
+    <div class="overview-card">
+      <h4>产品方案 <span class="tag tag-solution">FuXi-Air</span></h4>
+      <p>基于排放-气象-污染物多模态机器学习的 AI 预报产品，单次预报<strong>30 秒</strong>出结果，支持<strong>逐小时起报</strong>，覆盖 6 种污染物、7 天预报时效，已部署业务运行 10 个月。</p>
+    </div>
+  </div>
+  <div class="flow-section">
+    <div class="flow-title">预报员日常使用流程</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <div class="flow-step-name">数据接入</div>
+        <div class="flow-step-desc">气象场/污染物监测/<br>排放清单自动汇入</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <div class="flow-step-name">AI 预测</div>
+        <div class="flow-step-desc">FuXi-Air 模型推理<br>30秒生成72h预报</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <div class="flow-step-name">多模式对比</div>
+        <div class="flow-step-desc">10+ 模式同屏对比<br>准确率评估表辅助</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">4</div>
+        <div class="flow-step-name">人工修正</div>
+        <div class="flow-step-desc">预报员结合经验<br>调整异常时段</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">5</div>
+        <div class="flow-step-name">预报发布</div>
+        <div class="flow-step-desc">导出报表<br>支撑污染调度决策</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <div class="time-granularity" id="timeGranularity">
+    <button class="active" data-val="hour">小时</button>
+    <button data-val="day">日均</button>
+    <button data-val="month">月度</button>
+    <button data-val="quarter">季度</button>
+    <button data-val="year">年度</button>
+  </div>
+  <div class="time-picker" id="timePicker"><span>2026-09-02 15时 — 2026-09-05 14时</span></div>
+  <button class="btn-query" id="btnQuery">查询</button>
+
+  <div class="dropdown-wrap" id="multiModeWrap">
+    <button class="dropdown-btn" id="multiModeBtn"><span>多模式</span><span class="arrow"></span></button>
+    <div class="dropdown-panel" id="multiModePanel" style="min-width:230px;">
+      <div class="dp-header">快速选择模型组合</div>
+      <div class="dp-item active" data-preset="all"><span class="check"></span>全部模型对比</div>
+      <div class="dp-item" data-preset="fuxi"><span class="check"></span>仅 FuXi-Air 系列</div>
+      <div class="dp-item" data-preset="main"><span class="check"></span>主流模式（6个）</div>
+      <div class="dp-divider"></div>
+      <div class="dp-header">单模型切换</div>
+      <div id="multiModeList"></div>
+    </div>
+  </div>
+
+  <div class="dropdown-wrap" id="multiTimeWrap">
+    <button class="dropdown-btn" id="multiTimeBtn"><span id="multiTimeLabel">多时效：72h</span><span class="arrow"></span></button>
+    <div class="dropdown-panel" id="multiTimePanel" style="min-width:170px;">
+      <div class="dp-header">预报时效</div>
+      <div class="dp-item" data-hour="24"><span class="check"></span>24 小时</div>
+      <div class="dp-item" data-hour="48"><span class="check"></span>48 小时</div>
+      <div class="dp-item active" data-hour="72"><span class="check"></span>72 小时</div>
+      <div class="dp-item" data-hour="120"><span class="check"></span>120 小时（5天）</div>
+      <div class="dp-item" data-hour="168"><span class="check"></span>168 小时（7天）</div>
+    </div>
+  </div>
+
+  <div class="top-right"><span>收起</span><span>说明</span></div>
+</div>
+
+<div class="filter-bar">
+  <div class="pollutant-tabs" id="pollutantTabs">
+    <button data-pollutant="PM2.5">PM<sub>2.5</sub></button>
+    <button data-pollutant="PM10">PM<sub>10</sub></button>
+    <button class="active" data-pollutant="O3">O<sub>3</sub>_1h</button>
+    <button data-pollutant="NO2">NO<sub>2</sub></button>
+    <button data-pollutant="CO">CO</button>
+    <button data-pollutant="SO2">SO<sub>2</sub></button>
+    <button data-pollutant="AQI">AQI</button>
+  </div>
+  <div class="filter-group">
+    <span>评估天：</span>
+    <div class="eval-days" id="evalDays">
+      <button class="active" data-eval="all">整体</button>
+      <button data-eval="over">超标</button>
+      <button data-eval="heavy">高污染天</button>
+      <button data-eval="custom">自定义</button>
+    </div>
+  </div>
+  <div class="filter-group"><span>因子</span><select class="filter-select"><option>全部因子</option></select></div>
+  <div class="filter-group">
+    <select class="filter-select" id="citySelect">
+      <option value="shanghai">上海市</option>
+      <option value="beijing">北京市</option>
+      <option value="shenzhen">深圳市</option>
+    </select>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="chart-section">
+    <div class="section-tabs" id="sectionTabs">
+      <button class="active" data-tab="analysis">分析图</button>
+      <button data-tab="metrics">计算指标</button>
+    </div>
+
+    <div class="tab-pane active" id="tab-analysis">
+      <div class="chart-body">
+        <div class="chart-row">
+          <div class="chart-container" id="timeSeriesChart"></div>
+          <div class="scatter-container" id="scatterChart"></div>
+        </div>
+      </div>
+      <div class="legend-bar" id="legendBar"></div>
+      <div class="time-slider">
+        <div class="time-slider-track"><div class="time-slider-fill" id="sliderFill"></div></div>
+        <div class="time-labels" id="timeLabels">
+          <span>09/02 15时</span><span>09/03</span><span>09/04</span><span>09/05 14时</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="tab-metrics">
+      <div class="metrics-body">
+        <div class="metrics-layout">
+          <div class="model-checklist">
+            <div class="checklist-title">模型筛选</div>
+            <div class="checklist-actions">
+              <button id="selectAllBtn">全选</button>
+              <button id="invertBtn">反选</button>
+            </div>
+            <div id="modelChecklist"></div>
+          </div>
+          <div class="metrics-charts">
+            <div class="metric-card">
+              <div class="metric-card-title">RMSE 均方根误差<span class="badge badge-rmse">越低越好</span></div>
+              <div class="metric-chart" id="rmseChart"></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-card-title">R 相关系数<span class="badge badge-r">越高越好</span></div>
+              <div class="metric-chart" id="rChart"></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-card-title">MAE 平均绝对误差<span class="badge badge-mae">越低越好</span></div>
+              <div class="metric-chart" id="maeChart"></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-card-title">BIAS 平均偏差<span class="badge badge-bias">越接近0越好</span></div>
+              <div class="metric-chart" id="biasChart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="accuracy-section">
+    <div class="accuracy-header">
+      <div class="accuracy-title">准确率评估表</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div class="checkbox-group">
+          <label><input type="checkbox" checked> 全选</label>
+          <label><input type="checkbox" checked> 准确率</label>
+          <label><input type="checkbox" checked> 准确小时</label>
+          <label><input type="checkbox" checked> 偏低率</label>
+          <label><input type="checkbox" checked> 偏低小时</label>
+          <label><input type="checkbox" checked> 偏高率</label>
+          <label><input type="checkbox" checked> 偏高小时</label>
+          <label><input type="checkbox" checked> 有效情况</label>
+        </div>
+        <button class="btn-export">导出</button>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="accuracy-table" id="accuracyTable">
+        <thead>
+          <tr>
+            <th rowspan="2" style="min-width:130px;">数据源</th>
+            <th colspan="7" class="group-header">O<sub>3</sub>_1h 级别</th>
+            <th colspan="7" class="group-header">O<sub>3</sub>_1h 范围</th>
+          </tr>
+          <tr>
+            <th>准确率</th><th>准确小时</th><th>偏低率</th><th>偏低小时</th><th>偏高率</th><th>偏高小时</th><th>有效情况</th>
+            <th>准确率</th><th>准确小时</th><th>偏低率</th><th>偏低小时</th><th>偏高率</th><th>偏高小时</th><th>有效情况</th>
+          </tr>
+        </thead>
+        <tbody id="accuracyTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="compare-section">
+    <div class="compare-header">
+      <div class="compare-title">产品差异化对比：传统数值模式 vs FuXi-Air</div>
+      <div class="compare-badge">数据来源：上海市环境监测中心业务验证 · 2025</div>
+    </div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th class="col-dim">对比维度</th>
+          <th class="col-cmaq">CMAQ（传统数值模式）</th>
+          <th class="col-fuxi">FuXi-Air（本产品）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="dim">单次预报耗时</td>
+          <td class="cmaq">2-3 小时</td>
+          <td class="fuxi">25-30 秒<span class="win">提升 200 倍+</span></td>
+        </tr>
+        <tr>
+          <td class="dim">计算资源需求</td>
+          <td class="cmaq">高性能计算集群（多节点）</td>
+          <td class="fuxi">单 GPU 服务器<span class="win">成本大幅降低</span></td>
+        </tr>
+        <tr>
+          <td class="dim">O₃ 预测 RMSE</td>
+          <td class="cmaq">基准</td>
+          <td class="fuxi">降低 37%<span class="win">精度更优</span></td>
+        </tr>
+        <tr>
+          <td class="dim">PM₂.₅ 预测 RMSE</td>
+          <td class="cmaq">基准</td>
+          <td class="fuxi">降低 12%<span class="win">精度更优</span></td>
+        </tr>
+        <tr>
+          <td class="dim">时间分辨率</td>
+          <td class="cmaq">6 小时</td>
+          <td class="fuxi">逐小时（V2.0）<span class="win">捕捉日变化</span></td>
+        </tr>
+        <tr>
+          <td class="dim">预报时效</td>
+          <td class="cmaq">72 小时（3天）</td>
+          <td class="fuxi">168 小时（7天）<span class="win">时效翻倍+</span></td>
+        </tr>
+        <tr>
+          <td class="dim">起报频率</td>
+          <td class="cmaq">一天 2 次</td>
+          <td class="fuxi">逐小时起报<span class="win">实时响应</span></td>
+        </tr>
+        <tr>
+          <td class="dim">覆盖污染物</td>
+          <td class="cmaq">6 种常规污染物</td>
+          <td class="fuxi">6 种常规污染物</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="iteration-section">
+    <div class="iteration-header">
+      <div class="iteration-header-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+      </div>
+      <div class="iteration-header-text">
+        <h3>V1.0 → V2.0 迭代闭环</h3>
+        <p>从预报员真实反馈到产品优先级决策，完整呈现一次版本迭代的产品思考</p>
+      </div>
+    </div>
+    <div class="iteration-body">
+      <!-- V1.0 痛点 -->
+      <div class="iter-card pain">
+        <div class="iter-card-top">
+          <div class="iter-card-icon">
+            <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+          </div>
+          <div>
+            <div class="iter-card-title">V1.0 上线后</div>
+            <div class="iter-card-subtitle">预报员真实反馈</div>
+          </div>
+        </div>
+        <ul class="iter-card-list">
+          <li><strong>时间分辨率不足</strong>：6 小时间隔无法捕捉臭氧午后峰值，导致预警漏报</li>
+          <li><strong>预报时效不够</strong>：72 小时无法满足周度污染过程研判需求</li>
+          <li><strong>极端污染偏差大</strong>：高污染天预测值系统性偏低，预警能力弱</li>
+          <li><strong>起报频率低</strong>：一天仅能起报 2 次，无法实时响应天气变化</li>
+        </ul>
+      </div>
+
+      <div class="iter-arrow"><div class="iter-arrow-circle">→</div></div>
+
+      <!-- 产品决策 -->
+      <div class="iter-card decision">
+        <div class="iter-card-top">
+          <div class="iter-card-icon">
+            <svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l-1.4 1.4L9.4 19.4 21 7.8l-1.4-1.4z"/></svg>
+          </div>
+          <div>
+            <div class="iter-card-title">产品决策</div>
+            <div class="iter-card-subtitle">MoSCoW 优先级排序</div>
+          </div>
+        </div>
+        <ul class="iter-card-list">
+          <li><strong>逐小时分辨率</strong>（帧插值模块）<span class="iter-tag tag-must">Must</span><br>直接解决峰值漏报核心痛点</li>
+          <li><strong>分位数损失优化</strong><span class="iter-tag tag-must">Must</span><br>提升极端污染预警能力</li>
+          <li><strong>预报时效扩展至 168h</strong>（7天）<span class="iter-tag tag-should">Should</span></li>
+          <li><strong>地图可视化</strong>从 Must 降为 Should<span class="iter-tag tag-down">降级</span><br>非核心业务路径，延后至 V3.0</li>
+        </ul>
+      </div>
+
+      <div class="iter-arrow"><div class="iter-arrow-circle">→</div></div>
+
+      <!-- V2.0 成果 -->
+      <div class="iter-card result">
+        <div class="iter-card-top">
+          <div class="iter-card-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          </div>
+          <div>
+            <div class="iter-card-title">V2.0 上线后</div>
+            <div class="iter-card-subtitle">迭代效果验证</div>
+          </div>
+        </div>
+        <ul class="iter-card-list">
+          <li><strong>逐小时分辨率</strong>上线，臭氧日变化峰值捕捉率显著提升</li>
+          <li><strong>分位数损失</strong>优化后，高污染天预测偏差降低</li>
+          <li><strong>预报时效</strong>从 72h 扩展至 168h（7天）</li>
+          <li><strong>起报频率</strong>从一天 2 次提升至逐小时起报</li>
+          <li>北京 / 上海 / 深圳 <strong>3 城业务验证</strong>通过，稳定运行至今</li>
+        </ul>
+      </div>
+    </div>
+    <div class="iter-footer">
+      <div class="iter-footer-item"><span class="num">20+</span><span class="label">需求池反馈项</span></div>
+      <div class="iter-footer-item"><span class="num">2</span><span class="label">轮 MoSCoW 排序</span></div>
+      <div class="iter-footer-item"><span class="num">3</span><span class="label">个里程碑节点</span></div>
+      <div class="iter-footer-item"><span class="num">3</span><span class="label">城业务验证通过</span></div>
+      <div class="iter-footer-item" style="margin-left:auto;color:#94a3b8;">协同算法 / 研发完成 V2.0 上线交付</div>
+    </div>
+  </div>
+
+  <div class="highlights-section">
+    <div class="highlights-title">产品核心能力</div>
+    <div class="highlights-grid">
+      <div class="highlight-card">
+        <div class="highlight-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <div class="highlight-value">25-30s</div>
+        <div class="highlight-label">单次72h多站点预测<br>较CMAQ提升200倍+</div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></div>
+        <div class="highlight-value">6种</div>
+        <div class="highlight-label">污染物全覆盖<br>PM2.5/PM10/O3/NO2/CO/SO2</div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+        <div class="highlight-value">3城</div>
+        <div class="highlight-label">北京/上海/深圳<br>业务验证通过</div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></div>
+        <div class="highlight-value">V1→V2</div>
+        <div class="highlight-label">两轮版本迭代<br>逐小时+分位数预警</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">FuXi-Air 空气质量预测产品 · 产品经理作品集演示 · 本页数据为模拟展示，真实业务数据因保密要求不对外提供</div>
+
+<script>
+const MODELS = [
+  { key: 'obs', name: '实况', type: 'bar', color: '#9ca3af', visible: true },
+  { key: 'fuxi', name: '智能预报', type: 'line', color: '#2563eb', visible: true, highlight: true, width: 3 },
+  { key: 'recalc', name: '模型回算', type: 'line', color: '#0ea5e9', visible: true },
+  { key: 'ensemble', name: '集合预报', type: 'line', color: '#0891b2', visible: true },
+  { key: 'fuxi_sh', name: 'FuXi-Air-SH', type: 'line', color: '#1e3a8a', visible: true },
+  { key: 'fuxi_yrd', name: 'FuXi-Air-YRD', type: 'line', color: '#3b82f6', visible: true },
+  { key: 'cmcb', name: 'CMCB', type: 'line', color: '#dc2626', visible: true },
+  { key: 'cmcb_ec', name: 'CMCB-EC', type: 'line', color: '#ea580c', visible: true },
+  { key: 'cmcb_cma', name: 'CMCB-CMA', type: 'line', color: '#f472b6', visible: true },
+  { key: 'cmcb_m', name: 'CMCB-M', type: 'line', color: '#db2777', visible: true },
+  { key: 'cmsa', name: 'CMSA', type: 'line', color: '#9333ea', visible: true },
+  { key: 'naqpms', name: 'NAQPMS', type: 'line', color: '#a16207', visible: true },
+  { key: 'camx08', name: 'CAMx(08)', type: 'line', color: '#d97706', visible: false },
+  { key: 'camx20', name: 'CAMx(20)', type: 'line', color: '#b45309', visible: false },
+  { key: 'wrf', name: 'WRF-Chem', type: 'line', color: '#65a30d', visible: true },
+];
+
+const CITY_CONFIG = {
+  shanghai: { name: '上海市', seed: 100, ozoneBase: 68, pm25Base: 36, ozonePeak: 170, pm25Peak: 88, ozoneStd: 22, pm25Std: 15 },
+  beijing:  { name: '北京市', seed: 200, ozoneBase: 52, pm25Base: 58, ozonePeak: 145, pm25Peak: 130, ozoneStd: 18, pm25Std: 28 },
+  shenzhen: { name: '深圳市', seed: 300, ozoneBase: 75, pm25Base: 26, ozonePeak: 185, pm25Peak: 62, ozoneStd: 26, pm25Std: 10 },
+};
+
+const GRANULARITY_CONFIG = {
+  hour: { label: '小时', points: 72, interval: 'hour' },
+  day: { label: '日均', points: 30, interval: 'day' },
+  month: { label: '月度', points: 12, interval: 'month' },
+  quarter: { label: '季度', points: 8, interval: 'quarter' },
+  year: { label: '年度', points: 5, interval: 'year' },
+};
+
+// GB 3095-2012 二级标准阈值
+const POLLUTANT_STANDARD = {
+  'O3': { name: '臭氧', unit: 'μg/m³', grade2: 200, grade1: 160, heavy: 250 },
+  'PM2.5': { name: '细颗粒物', unit: 'μg/m³', grade2: 75, grade1: 35, heavy: 150 },
+  'PM10': { name: '可吸入颗粒物', unit: 'μg/m³', grade2: 150, grade1: 50, heavy: 250 },
+  'NO2': { name: '二氧化氮', unit: 'μg/m³', grade2: 80, grade1: 40, heavy: 180 },
+  'CO': { name: '一氧化碳', unit: 'mg/m³', grade2: 10, grade1: 10, heavy: 20 },
+  'SO2': { name: '二氧化硫', unit: 'μg/m³', grade2: 150, grade1: 50, heavy: 300 },
+  'AQI': { name: '空气质量指数', unit: '', grade2: 100, grade1: 50, heavy: 200 },
+};
+
+const state = {
+  pollutant: 'O3', city: 'shanghai', granularity: 'hour',
+  forecastHour: 72, evalDay: 'all',
+  hiddenModels: new Set(), activeTab: 'analysis',
+  sliderPct: 1, querySeed: 0,
+};
+
+function seededRandom(seed) {
+  let s = seed;
+  return function() { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+
+function getPollutantConfig(pollutant, city) {
+  const cityCfg = CITY_CONFIG[city];
+  const std = POLLUTANT_STANDARD[pollutant];
+  const map = {
+    'O3': { base: cityCfg.ozoneBase, amplitude: cityCfg.ozoneStd * 2.5, unit: std.unit, max: cityCfg.ozonePeak },
+    'PM2.5': { base: cityCfg.pm25Base, amplitude: cityCfg.pm25Std * 2.5, unit: std.unit, max: cityCfg.pm25Peak },
+    'PM10': { base: cityCfg.pm25Base * 1.6, amplitude: cityCfg.pm25Std * 3, unit: std.unit, max: cityCfg.pm25Peak * 1.8 },
+    'NO2': { base: 42, amplitude: 22, unit: std.unit, max: 90 },
+    'CO': { base: 0.85, amplitude: 0.45, unit: std.unit, max: 2 },
+    'SO2': { base: 12, amplitude: 8, unit: std.unit, max: 35 },
+    'AQI': { base: 75, amplitude: 45, unit: std.unit, max: 180 },
+  };
+  return map[pollutant] || map['O3'];
+}
+
+function generateTimeLabels(granularity) {
+  const cfg = GRANULARITY_CONFIG[granularity];
+  const labels = [];
+  const now = new Date('2026-09-05T14:00:00');
+  for (let i = cfg.points - 1; i >= 0; i--) {
+    const d = new Date(now);
+    if (cfg.interval === 'hour') { d.setHours(d.getHours() - i); labels.push(`${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}时`); }
+    else if (cfg.interval === 'day') { d.setDate(d.getDate() - i); labels.push(`${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`); }
+    else if (cfg.interval === 'month') { d.setMonth(d.getMonth() - i); labels.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); }
+    else if (cfg.interval === 'quarter') { d.setMonth(d.getMonth() - i * 3); labels.push(`${d.getFullYear()}-Q${Math.floor(d.getMonth()/3)+1}`); }
+    else if (cfg.interval === 'year') { d.setFullYear(d.getFullYear() - i); labels.push(`${d.getFullYear()}年`); }
+  }
+  return labels;
+}
+
+function generateTimeData() {
+  const cfg = GRANULARITY_CONFIG[state.granularity];
+  const cityCfg = CITY_CONFIG[state.city];
+  const pollCfg = getPollutantConfig(state.pollutant, state.city);
+  const std = POLLUTANT_STANDARD[state.pollutant];
+  const times = generateTimeLabels(state.granularity);
+  const data = {};
+  const rand = seededRandom(cityCfg.seed + state.pollutant.charCodeAt(0) * 3 + state.granularity.length * 11 + state.forecastHour + state.querySeed * 997);
+
+  const obsBase = [];
+  for (let i = 0; i < cfg.points; i++) {
+    let val;
+    if (state.granularity === 'hour') {
+      const diurnal = Math.sin((i - 6) / 24 * Math.PI * 2) * pollCfg.amplitude * 0.6;
+      const trend = Math.sin(i / 30 * Math.PI) * pollCfg.amplitude * 0.4;
+      const noise = (rand() - 0.5) * pollCfg.amplitude * 0.3;
+      val = pollCfg.base + diurnal + trend + noise;
+    } else {
+      const trend = Math.sin(i / cfg.points * Math.PI * 2) * pollCfg.amplitude * 0.5;
+      const noise = (rand() - 0.5) * pollCfg.amplitude * 0.4;
+      val = pollCfg.base + trend + noise;
+    }
+    obsBase.push(Math.max(0, val));
+  }
+
+  let filteredIndices = obsBase.map((_, i) => i);
+  if (state.evalDay === 'over') filteredIndices = obsBase.map((v, i) => v > std.grade2 ? i : -1).filter(i => i >= 0);
+  else if (state.evalDay === 'heavy') filteredIndices = obsBase.map((v, i) => v > std.heavy ? i : -1).filter(i => i >= 0);
+
+  MODELS.forEach(m => {
+    const mrand = seededRandom(cityCfg.seed + m.key.length * 7 + state.pollutant.charCodeAt(0) * 5);
+    const series = [];
+    let errorFactor = m.key === 'fuxi' || m.key === 'fuxi_sh' || m.key === 'fuxi_yrd' ? 0.05 + mrand() * 0.05 : m.key === 'obs' ? 0 : 0.15 + mrand() * 0.25;
+    const hourFactor = 1 + (state.forecastHour - 24) / 168 * 0.3;
+    for (let i = 0; i < cfg.points; i++) {
+      if (state.evalDay !== 'all' && !filteredIndices.includes(i)) { series.push(null); continue; }
+      let val = obsBase[i];
+      if (m.key !== 'obs') val = val + (mrand() - 0.5) * pollCfg.amplitude * errorFactor * hourFactor * 2;
+      series.push(Number(Math.max(0, val).toFixed(1)));
+    }
+    data[m.key] = series;
+  });
+  return { times, data };
+}
+
+function generateScatterData() {
+  const cityCfg = CITY_CONFIG[state.city];
+  const pollCfg = getPollutantConfig(state.pollutant, state.city);
+  const std = POLLUTANT_STANDARD[state.pollutant];
+  const rand = seededRandom(cityCfg.seed + 999 + state.pollutant.charCodeAt(0) + state.forecastHour + state.querySeed * 997);
+  let pointCount = 80;
+  if (state.evalDay === 'over') pointCount = 35;
+  if (state.evalDay === 'heavy') pointCount = 18;
+  const points = [];
+  for (let i = 0; i < pointCount; i++) {
+    let obs;
+    if (state.evalDay === 'over') obs = std.grade2 + rand() * (pollCfg.max - std.grade2) * 0.9;
+    else if (state.evalDay === 'heavy') obs = std.heavy + rand() * (pollCfg.max - std.heavy) * 0.8;
+    else obs = rand() * pollCfg.max * 0.9;
+    const hourFactor = 1 + (state.forecastHour - 24) / 168 * 0.2;
+    const pred = obs + (rand() - 0.5) * pollCfg.max * 0.1 * hourFactor;
+    points.push([Number(obs.toFixed(1)), Number(Math.max(0, pred).toFixed(1))]);
+  }
+  return { points, maxVal: pollCfg.max };
+}
+
+function generateAccuracyData() {
+  const cityCfg = CITY_CONFIG[state.city];
+  const rand = seededRandom(cityCfg.seed + 500 + state.forecastHour + state.evalDay.length * 10 + state.querySeed * 997);
+  const baseRows = [
+    { model: '模型回算', baseAcc: 92.5, highlight: false },
+    { model: '智能预报', baseAcc: 94.8, highlight: true },
+    { model: '集合预报', baseAcc: 91.2, highlight: false },
+    { model: 'FuXi-Air-SH', baseAcc: 90.5, highlight: false },
+    { model: 'FuXi-Air-YRD', baseAcc: 89.3, highlight: false },
+    { model: 'CMCB', baseAcc: 86.0, highlight: false },
+    { model: 'CMCB-EC', baseAcc: 85.2, highlight: false },
+    { model: 'CMCB-CMA', baseAcc: 84.1, highlight: false },
+    { model: 'CMCB-M', baseAcc: 83.0, highlight: false },
+    { model: 'CMSA', baseAcc: 88.0, highlight: false },
+    { model: 'NAQPMS', baseAcc: 82.5, highlight: false },
+    { model: 'CAMx(08)', baseAcc: 81.0, highlight: false },
+    { model: 'CAMx(20)', baseAcc: 80.2, highlight: false },
+    { model: 'WRF-Chem', baseAcc: 89.0, highlight: false },
+  ];
+  let validBase = 81;
+  if (state.evalDay === 'over') validBase = 28;
+  if (state.evalDay === 'heavy') validBase = 12;
+  const hourPenalty = (state.forecastHour - 24) / 168 * 3;
+  return baseRows.map(r => {
+    const acc1 = Math.min(100, Math.max(60, r.baseAcc - hourPenalty + (rand() - 0.5) * 2));
+    const h1 = Math.round(validBase * acc1 / 100);
+    const low1 = Math.max(0, (100 - acc1) * 0.6);
+    const high1 = Math.max(0, (100 - acc1) * 0.4);
+    const acc2 = Math.min(100, Math.max(55, acc1 - 4 - rand() * 2));
+    const h2 = Math.round(h1 * 0.93);
+    const low2 = Math.max(0, (100 - acc2) * 0.65);
+    const high2 = Math.max(0, (100 - acc2) * 0.35);
+    return {
+      model: r.model, highlight: r.highlight,
+      acc1: acc1.toFixed(1), h1, low1: low1.toFixed(1), lowh1: Math.round(low1 * 0.7),
+      high1: high1.toFixed(1), highh1: Math.round(high1 * 0.7), valid1: `${h1}/${validBase}`,
+      acc2: acc2.toFixed(1), h2, low2: low2.toFixed(1), lowh2: Math.round(low2 * 0.7),
+      high2: high2.toFixed(1), highh2: Math.round(high2 * 0.7), valid2: `${h2}/${validBase}`,
+    };
+  });
+}
+
+function generateMetricsData() {
+  const cityCfg = CITY_CONFIG[state.city];
+  const pollCfg = getPollutantConfig(state.pollutant, state.city);
+  const rand = seededRandom(cityCfg.seed + 777 + state.pollutant.charCodeAt(0) + state.forecastHour + state.querySeed * 997);
+  const lineModels = MODELS.filter(m => m.type === 'line');
+  const hourFactor = 1 + (state.forecastHour - 24) / 168 * 0.4;
+  const data = { rmse: [], r: [], mae: [], bias: [] };
+  lineModels.forEach(m => {
+    const qualityFactor = m.key === 'fuxi' || m.key === 'fuxi_sh' || m.key === 'fuxi_yrd' ? 0.28 + rand() * 0.18 : 0.55 + rand() * 0.5;
+    const rmse = Number((pollCfg.max * 0.075 * qualityFactor * hourFactor).toFixed(2));
+    const r = Number(Math.min(0.998, Math.max(0.6, 1 - qualityFactor * 0.22 + rand() * 0.04)).toFixed(3));
+    const mae = Number((rmse * 0.72).toFixed(2));
+    const bias = Number(((rand() - 0.5) * pollCfg.max * 0.035 * qualityFactor * hourFactor).toFixed(2));
+    data.rmse.push({ name: m.name, value: rmse, color: m.color, highlight: m.highlight });
+    data.r.push({ name: m.name, value: r, color: m.color, highlight: m.highlight });
+    data.mae.push({ name: m.name, value: mae, color: m.color, highlight: m.highlight });
+    data.bias.push({ name: m.name, value: bias, color: m.color, highlight: m.highlight });
+  });
+  return data;
+}
+
+function renderLegend() {
+  const bar = document.getElementById('legendBar');
+  bar.innerHTML = '';
+  MODELS.forEach(m => {
+    const item = document.createElement('div');
+    item.className = 'legend-item' + (state.hiddenModels.has(m.key) ? ' inactive' : '') + (m.highlight ? ' highlight' : '');
+    item.innerHTML = m.type === 'bar'
+      ? `<div class="legend-bar-bg"></div><span>${m.name}</span>`
+      : `<div class="legend-line" style="background:${m.color};${m.highlight ? 'height:4px;' : ''}"></div><span>${m.name}</span>`;
+    item.addEventListener('click', () => toggleModel(m.key));
+    bar.appendChild(item);
+  });
+}
+
+function renderModelChecklist() {
+  const container = document.getElementById('modelChecklist');
+  container.innerHTML = '';
+  MODELS.filter(m => m.type === 'line').forEach(m => {
+    const item = document.createElement('label');
+    item.className = 'model-check-item' + (m.highlight ? ' highlight-item' : '');
+    item.innerHTML = `<input type="checkbox" ${!state.hiddenModels.has(m.key) ? 'checked' : ''} data-key="${m.key}"><span class="color-dot" style="background:${m.color}"></span><span>${m.name}</span>`;
+    item.querySelector('input').addEventListener('change', e => {
+      if (e.target.checked) state.hiddenModels.delete(m.key); else state.hiddenModels.add(m.key);
+      syncModelUI();
+    });
+    container.appendChild(item);
+  });
+}
+
+function renderMultiModeList() {
+  const container = document.getElementById('multiModeList');
+  container.innerHTML = '';
+  MODELS.filter(m => m.type === 'line').forEach(m => {
+    const item = document.createElement('div');
+    item.className = 'dp-item' + (!state.hiddenModels.has(m.key) ? ' active' : '');
+    item.innerHTML = `<span class="check"></span><span style="width:8px;height:8px;border-radius:50%;background:${m.color};display:inline-block;"></span>${m.name}`;
+    item.addEventListener('click', () => toggleModel(m.key));
+    container.appendChild(item);
+  });
+}
+
+function toggleModel(key) {
+  if (state.hiddenModels.has(key)) state.hiddenModels.delete(key);
+  else state.hiddenModels.add(key);
+  syncModelUI();
+}
+
+function syncModelUI() {
+  renderLegend();
+  renderModelChecklist();
+  renderMultiModeList();
+  updateTimeSeries();
+  updateMetricsCharts();
+}
+
+let timeChart, scatterChart, rmseChart, rChart, maeChart, biasChart;
+
+function initCharts() {
+  timeChart = echarts.init(document.getElementById('timeSeriesChart'));
+  scatterChart = echarts.init(document.getElementById('scatterChart'));
+  rmseChart = echarts.init(document.getElementById('rmseChart'));
+  rChart = echarts.init(document.getElementById('rChart'));
+  maeChart = echarts.init(document.getElementById('maeChart'));
+  biasChart = echarts.init(document.getElementById('biasChart'));
+  [timeChart, scatterChart, rmseChart, rChart, maeChart, biasChart].forEach(c => {
+    new ResizeObserver(() => c.resize()).observe(c.getDom());
+  });
+}
+
+function updateTimeSeries() {
+  const { times, data } = generateTimeData();
+  const pollCfg = getPollutantConfig(state.pollutant, state.city);
+  const showCount = Math.max(2, Math.round(times.length * state.sliderPct));
+  const showTimes = times.slice(0, showCount);
+  const series = [];
+  if (!state.hiddenModels.has('obs')) {
+    series.push({ name: '实况', type: 'bar', data: data['obs'].slice(0, showCount), itemStyle: { color: '#d1d5db', barWidth: '45%' }, z: 1, connectNulls: false });
+  }
+  MODELS.filter(m => m.type === 'line').forEach(m => {
+    if (state.hiddenModels.has(m.key)) return;
+    series.push({ name: m.name, type: 'line', data: data[m.key].slice(0, showCount), smooth: true, symbol: 'none', connectNulls: false, lineStyle: { color: m.color, width: m.highlight ? 3 : 1.5 }, itemStyle: { color: m.color }, z: m.highlight ? 10 : 2 });
+  });
+  timeChart.setOption({
+    tooltip: { trigger: 'axis', confine: true, textStyle: { fontSize: 11 } },
+    grid: { left: 55, right: 25, top: 25, bottom: 45 },
+    xAxis: { type: 'category', data: showTimes, axisLabel: { fontSize: 10, color: '#9ca3af', interval: Math.floor(showTimes.length / 6) }, axisLine: { lineStyle: { color: '#e2e6ec' } }, axisTick: { show: false } },
+    yAxis: { type: 'value', name: pollCfg.unit, nameTextStyle: { fontSize: 11, color: '#9ca3af', padding: [0, 0, 0, -5] }, axisLabel: { fontSize: 10, color: '#9ca3af' }, splitLine: { lineStyle: { color: '#f1f3f7' } } },
+    series,
+  }, true);
+}
+
+function updateScatter() {
+  const { points, maxVal } = generateScatterData();
+  scatterChart.setOption({
+    tooltip: { trigger: 'item', confine: true, formatter: p => `实测: ${p.value[0]}<br/>预测: ${p.value[1]}`, textStyle: { fontSize: 11 } },
+    grid: { left: 55, right: 30, top: 25, bottom: 45 },
+    xAxis: { type: 'value', name: '实测', nameLocation: 'middle', nameGap: 28, nameTextStyle: { fontSize: 12, color: '#6b7280', fontWeight: 500 }, min: 0, max: maxVal, axisLabel: { fontSize: 10, color: '#9ca3af' }, splitLine: { lineStyle: { color: '#f1f3f7' } } },
+    yAxis: { type: 'value', name: '预测', nameLocation: 'middle', nameGap: 38, nameTextStyle: { fontSize: 12, color: '#6b7280', fontWeight: 500 }, min: 0, max: maxVal, axisLabel: { fontSize: 10, color: '#9ca3af' }, splitLine: { lineStyle: { color: '#f1f3f7' } } },
+    series: [
+      { type: 'line', data: [[0,0],[maxVal,maxVal]], symbol: 'none', lineStyle: { color: '#374151', width: 1.2 }, silent: true, z: 1 },
+      { type: 'line', data: [[0,0],[maxVal*0.8,maxVal]], symbol: 'none', lineStyle: { color: '#9ca3af', width: 1, type: 'dashed' }, silent: true, z: 1 },
+      { type: 'line', data: [[0,0],[maxVal,maxVal*0.8]], symbol: 'none', lineStyle: { color: '#9ca3af', width: 1, type: 'dashed' }, silent: true, z: 1 },
+      { name: '智能预报', type: 'scatter', data: points, symbolSize: 7, itemStyle: { color: '#2563eb', opacity: 0.65 }, z: 2 },
+    ],
+  }, true);
+}
+
+function updateMetricsCharts() {
+  const allData = generateMetricsData();
+  const visibleNames = new Set(MODELS.filter(m => m.type === 'line' && !state.hiddenModels.has(m.key)).map(m => m.name));
+  const metrics = [
+    { chart: rmseChart, data: allData.rmse, name: 'RMSE', lower: true },
+    { chart: rChart, data: allData.r, name: 'R', lower: false },
+    { chart: maeChart, data: allData.mae, name: 'MAE', lower: true },
+    { chart: biasChart, data: allData.bias, name: 'BIAS', lower: 'zero' },
+  ];
+  metrics.forEach(({ chart, data, name, lower }) => {
+    const filtered = data.filter(d => visibleNames.has(d.name));
+    const sorted = [...filtered].sort((a, b) => lower === true ? a.value - b.value : lower === 'zero' ? Math.abs(a.value) - Math.abs(b.value) : b.value - a.value);
+    chart.setOption({
+      tooltip: { trigger: 'axis', confine: true, textStyle: { fontSize: 11 }, formatter: p => `${p[0].name}<br/>${name}: ${p[0].value}` },
+      grid: { left: 95, right: 35, top: 10, bottom: 25 },
+      xAxis: { type: 'value', axisLabel: { fontSize: 10, color: '#9ca3af' }, splitLine: { lineStyle: { color: '#f1f3f7' } }, axisLine: { show: false }, axisTick: { show: false } },
+      yAxis: { type: 'category', data: sorted.map(d => d.name), axisLabel: { fontSize: 11, color: '#4b5563' }, axisLine: { lineStyle: { color: '#e2e6ec' } }, axisTick: { show: false } },
+      series: [{ type: 'bar', data: sorted.map(d => ({ value: d.value, itemStyle: { color: d.color, borderRadius: [0, 4, 4, 0] } })), barWidth: '55%', label: { show: true, position: 'right', fontSize: 10, color: '#6b7280', formatter: '{c}' } }],
+    }, true);
+  });
+}
+
+function renderAccuracyTable() {
+  const tbody = document.getElementById('accuracyTableBody');
+  const data = generateAccuracyData();
+  tbody.innerHTML = '';
+  data.forEach(row => {
+    const tr = document.createElement('tr');
+    if (row.highlight) tr.className = 'highlight-row';
+    const fmtRate = v => { const num = parseFloat(v); return `<span class="${num >= 95 ? 'rate-good' : num >= 85 ? '' : 'rate-bad'}">${v} %</span>`; };
+    tr.innerHTML = `<td class="model-name">${row.model}</td><td>${fmtRate(row.acc1)}</td><td>${row.h1}</td><td>${row.low1} %</td><td>${row.lowh1}</td><td>${row.high1} %</td><td>${row.highh1}</td><td>${row.valid1}</td><td>${fmtRate(row.acc2)}</td><td>${row.h2}</td><td>${row.low2} %</td><td>${row.lowh2}</td><td>${row.high2} %</td><td>${row.highh2}</td><td>${row.valid2}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function updateTimePicker() {
+  const picker = document.getElementById('timePicker');
+  const labels = generateTimeLabels(state.granularity);
+  const texts = { hour: '2026-09-02 15时 — 2026-09-05 14时', day: '2026-08-07 — 2026-09-05（近30天）', month: '2025-10 — 2026-09（近12月）', quarter: '2024-Q4 — 2026-Q3（近8季度）', year: '2022年 — 2026年（近5年）' };
+  picker.innerHTML = `<span>${texts[state.granularity]}</span>`;
+  const timeLabels = document.getElementById('timeLabels');
+  if (labels.length >= 4) { const step = Math.floor(labels.length / 3); timeLabels.innerHTML = `<span>${labels[0]}</span><span>${labels[step]}</span><span>${labels[step*2]}</span><span>${labels[labels.length-1]}</span>`; }
+}
+
+function setupDropdowns() {
+  const overlay = document.getElementById('overlay');
+  const wraps = [{ btn: 'multiModeBtn', panel: 'multiModePanel' }, { btn: 'multiTimeBtn', panel: 'multiTimePanel' }];
+  function closeAll() { wraps.forEach(w => { document.getElementById(w.panel).classList.remove('show'); document.getElementById(w.btn).classList.remove('active'); }); overlay.classList.remove('show'); }
+  wraps.forEach(w => {
+    document.getElementById(w.btn).addEventListener('click', e => {
+      e.stopPropagation();
+      const panel = document.getElementById(w.panel); const btn = document.getElementById(w.btn);
+      const isOpen = panel.classList.contains('show'); closeAll();
+      if (!isOpen) { panel.classList.add('show'); btn.classList.add('active'); overlay.classList.add('show'); }
+    });
+  });
+  overlay.addEventListener('click', closeAll);
+  document.querySelectorAll('#multiTimePanel .dp-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('#multiTimePanel .dp-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      state.forecastHour = parseInt(item.dataset.hour);
+      document.getElementById('multiTimeLabel').textContent = `多时效：${state.forecastHour}h`;
+      closeAll(); updateAll();
+    });
+  });
+  document.querySelectorAll('#multiModePanel .dp-item[data-preset]').forEach(item => {
+    item.addEventListener('click', () => {
+      const preset = item.dataset.preset;
+      document.querySelectorAll('#multiModePanel .dp-item[data-preset]').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      if (preset === 'all') state.hiddenModels.clear();
+      else if (preset === 'fuxi') state.hiddenModels = new Set(MODELS.filter(m => m.type === 'line' && !m.key.startsWith('fuxi') && m.key !== 'obs').map(m => m.key));
+      else if (preset === 'main') { const mainKeys = ['fuxi', 'recalc', 'ensemble', 'cmcb', 'cmsa', 'wrf']; state.hiddenModels = new Set(MODELS.filter(m => m.type === 'line' && !mainKeys.includes(m.key)).map(m => m.key)); }
+      syncModelUI(); closeAll();
+    });
+  });
+}
+
+function bindEvents() {
+  document.getElementById('pollutantTabs').addEventListener('click', e => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    document.querySelectorAll('#pollutantTabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); state.pollutant = btn.dataset.pollutant; updateAll();
+  });
+  document.getElementById('timeGranularity').addEventListener('click', e => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    document.querySelectorAll('#timeGranularity button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); state.granularity = btn.dataset.val; updateTimePicker(); updateAll();
+  });
+  document.getElementById('evalDays').addEventListener('click', e => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    document.querySelectorAll('#evalDays button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); state.evalDay = btn.dataset.eval; updateAll();
+  });
+  document.getElementById('citySelect').addEventListener('change', e => { state.city = e.target.value; updateAll(); });
+  document.getElementById('sectionTabs').addEventListener('click', e => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    document.querySelectorAll('#sectionTabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    state.activeTab = btn.dataset.tab;
+    if (btn.dataset.tab === 'metrics') setTimeout(() => { rmseChart.resize(); rChart.resize(); maeChart.resize(); biasChart.resize(); }, 60);
+  });
+  document.getElementById('selectAllBtn').addEventListener('click', () => { state.hiddenModels.clear(); syncModelUI(); });
+  document.getElementById('invertBtn').addEventListener('click', () => {
+    const newHidden = new Set(); MODELS.filter(m => m.type === 'line').forEach(m => { if (!state.hiddenModels.has(m.key)) newHidden.add(m.key); });
+    state.hiddenModels = newHidden; syncModelUI();
+  });
+  document.getElementById('btnQuery').addEventListener('click', function() {
+    const btn = this;
+    btn.textContent = '查询中...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    setTimeout(() => {
+      state.querySeed++;
+      state.sliderPct = 1;
+      document.getElementById('sliderFill').style.width = '100%';
+      updateAll();
+      btn.textContent = '查询';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }, 500);
+  });
+  document.querySelector('.time-slider-track').addEventListener('click', e => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = Math.max(0.05, Math.min(1, (e.clientX - rect.left) / rect.width));
+    state.sliderPct = pct;
+    document.getElementById('sliderFill').style.width = (pct * 100) + '%';
+    updateTimeSeries();
+  });
+}
+
+function updateAll() { updateTimeSeries(); updateScatter(); renderAccuracyTable(); updateMetricsCharts(); }
+
+function init() { initCharts(); renderLegend(); renderModelChecklist(); renderMultiModeList(); updateTimePicker(); setupDropdowns(); updateAll(); bindEvents(); }
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

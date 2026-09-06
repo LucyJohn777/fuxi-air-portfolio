@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能分析子系统 - 智能体交互原型</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#1f2937}
+.layout{display:flex;height:100vh}
+.sidebar{width:220px;background:#0f172a;color:#e2e8f0;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-logo{padding:20px 16px;border-bottom:1px solid #1e293b}
+.sidebar-logo h2{font-size:15px;color:#38bdf8}
+.sidebar-logo p{font-size:11px;color:#64748b;margin-top:4px}
+.nav-group{padding:12px 0}
+.nav-group-title{padding:8px 16px;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px}
+.nav-item{padding:10px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s}
+.nav-item:hover{background:#1e293b}
+.nav-item.active{background:#1e293b;color:#38bdf8;border-left:3px solid #38bdf8;padding-left:13px}
+.nav-item .icon{width:16px;text-align:center}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:52px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;padding:0 24px;justify-content:space-between}
+.topbar-title{font-size:15px;font-weight:600}
+.topbar-status{display:flex;align-items:center;gap:16px;font-size:12px;color:#6b7280}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;margin-right:4px}
+.content{flex:1;display:flex;overflow:hidden}
+.chat-area{flex:1;display:flex;flex-direction:column;background:#fff;border-right:1px solid #e5e7eb}
+.chat-header{padding:12px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:10px}
+.agent-avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0f766e,#14b8a6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:600}
+.agent-info h3{font-size:13px;font-weight:600}
+.agent-info p{font-size:11px;color:#6b7280}
+.chat-messages{flex:1;overflow-y:auto;padding:20px}
+.msg{margin-bottom:20px;display:flex;gap:10px}
+.msg.user{flex-direction:row-reverse}
+.msg-avatar{width:28px;height:28px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff}
+.msg.agent .msg-avatar{background:linear-gradient(135deg,#0f766e,#14b8a6)}
+.msg.user .msg-avatar{background:#3b82f6}
+.msg-bubble{max-width:78%;padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.6}
+.msg.agent .msg-bubble{background:#f8fafc;border:1px solid #e2e8f0;border-top-left-radius:2px}
+.msg.user .msg-bubble{background:#3b82f6;color:#fff;border-top-right-radius:2px}
+.agent-step{display:flex;align-items:flex-start;gap:8px;margin:6px 0;font-size:12px}
+.step-num{width:18px;height:18px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px}
+.step-text{color:#475569}
+.step-text .highlight{color:#0f766e;font-weight:600}
+.result-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:8px}
+.result-card h4{font-size:12px;color:#0f766e;margin-bottom:8px}
+.result-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.metric{text-align:center;padding:6px;background:#f0fdfa;border-radius:6px}
+.metric-val{font-size:16px;font-weight:700;color:#0f766e}
+.metric-label{font-size:10px;color:#6b7280;margin-top:2px}
+.error-breakdown{margin-top:10px;padding:10px;background:#fefce8;border-radius:6px;border-left:3px solid #eab308}
+.error-breakdown h5{font-size:11px;color:#92400e;margin-bottom:6px}
+.error-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;color:#78350f}
+.case-item{padding:8px;background:#f8fafc;border-radius:6px;margin-top:6px;border:1px solid #e2e8f0}
+.case-item .case-title{font-size:12px;font-weight:600;color:#1e293b}
+.case-item .case-meta{font-size:10px;color:#6b7280;margin-top:3px}
+.case-item .case-sim{font-size:10px;color:#0f766e;font-weight:600}
+.chat-input{padding:16px 20px;border-top:1px solid #e5e7eb;background:#fff}
+.input-wrap{display:flex;gap:8px}
+.input-wrap input{flex:1;padding:10px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;outline:none}
+.input-wrap input:focus{border-color:#0f766e;box-shadow:0 0 0 2px rgba(15,118,110,.1)}
+.send-btn{padding:10px 20px;background:#0f766e;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer}
+.quick-questions{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.quick-q{padding:5px 12px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:16px;font-size:11px;color:#0f766e;cursor:pointer}
+.side-panel{width:340px;background:#f8fafc;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.panel-section{padding:16px;border-bottom:1px solid #e5e7eb}
+.panel-section h3{font-size:13px;font-weight:600;margin-bottom:12px;color:#1f2937;display:flex;align-items:center;gap:6px}
+.panel-section h3::before{content:'';width:3px;height:14px;background:#0f766e;border-radius:2px}
+.agent-flow{display:flex;flex-direction:column;gap:0}
+.flow-node{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s}
+.flow-node:hover{border-color:#0f766e}
+.flow-node.active{border-color:#0f766e;background:#f0fdfa}
+.flow-node.done{opacity:.7}
+.flow-node .node-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0}
+.flow-node .node-info{flex:1}
+.flow-node .node-name{font-weight:600;font-size:12px}
+.flow-node .node-desc{font-size:10px;color:#6b7280}
+.flow-node .node-status{font-size:10px;padding:2px 6px;border-radius:4px}
+.status-running{background:#fef3c7;color:#92400e}
+.status-done{background:#d1fae5;color:#065f46}
+.status-pending{background:#f3f4f6;color:#6b7280}
+.flow-arrow{text-align:center;color:#9ca3af;font-size:14px;padding:2px 0}
+.data-source{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px}
+.data-source .ds-icon{width:20px;height:20px;border-radius:4px;background:#e0e7ff;display:flex;align-items:center;justify-content:center;font-size:10px}
+.data-source .ds-name{flex:1}
+.data-source .ds-status{font-size:10px;color:#10b981}
+.sla-item{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px dashed #e5e7eb}
+.sla-item:last-child{border-bottom:none}
+.sla-label{color:#6b7280}
+.sla-value{font-weight:600;color:#0f766e}
+.page{display:none;flex:1;flex-direction:column;overflow:hidden}
+.page.active{display:flex}
+.dashboard-page{padding:20px;overflow-y:auto;background:#f0f2f5}
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+.dash-card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.dash-card h4{font-size:12px;color:#6b7280;margin-bottom:8px}
+.dash-card .big-num{font-size:24px;font-weight:700;color:#0f766e}
+.dash-card .sub{font-size:11px;color:#10b981;margin-top:4px}
+.dash-chart{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.dash-chart h4{font-size:13px;font-weight:600;margin-bottom:12px}
+.chart-placeholder{height:180px;background:linear-gradient(180deg,#f0fdfa 0%,#fff 100%);border-radius:8px;display:flex;align-items:flex-end;justify-content:space-around;padding:20px}
+.bar{width:28px;background:linear-gradient(180deg,#14b8a6,#0f766e);border-radius:4px 4px 0 0;position:relative}
+.bar::after{content:attr(data-val);position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:#0f766e;font-weight:600}
+.trend-chart{height:160px;display:flex;align-items:flex-end;gap:4px;padding:10px 0}
+.trend-bar{flex:1;background:#94a3b8;border-radius:2px 2px 0 0;position:relative;min-height:4px}
+.trend-bar.highlight{background:#0f766e}
+.agent-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.agent-card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);border-left:4px solid #ccc;cursor:pointer;transition:all .2s}
+.agent-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.kb-page{padding:20px;overflow-y:auto;background:#f0f2f5}
+.kb-search{background:#fff;border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.kb-search input{width:100%;padding:12px 16px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none}
+.kb-search input:focus{border-color:#0f766e}
+.kb-filters{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.kb-filter{padding:5px 12px;background:#f1f5f9;border-radius:16px;font-size:11px;color:#475569;cursor:pointer}
+.kb-filter.active{background:#0f766e;color:#fff}
+.kb-result{background:#fff;border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);cursor:pointer}
+.kb-result:hover{border-left:3px solid #0f766e}
+.kb-result .kb-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.kb-result .kb-source{font-size:11px;color:#6b7280;margin-bottom:8px}
+.kb-result .kb-snippet{font-size:12px;color:#475569;line-height:1.6}
+.kb-result .kb-tags{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.kb-tag{padding:2px 8px;background:#f0fdfa;border-radius:4px;font-size:10px;color:#0f766e}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px;width:560px;max-height:80vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:16px}
+.modal-close{float:right;cursor:pointer;color:#9ca3af;font-size:20px}
+.modal-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
+.modal-row .label{color:#6b7280}
+.modal-row .value{font-weight:500}
+.proto-note{position:fixed;bottom:12px;right:12px;background:rgba(15,118,110,.9);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;z-index:100}
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-logo"><h2>智能分析子系统</h2><p>Air Quality Intelligence</p></div>
+    <div class="nav-group">
+      <div class="nav-group-title">核心功能</div>
+      <div class="nav-item active" onclick="switchPage('chat',this)"><span class="icon">💬</span>智能体对话</div>
+      <div class="nav-item" onclick="switchPage('dashboard',this)"><span class="icon">📊</span>预报大屏</div>
+      <div class="nav-item" onclick="switchPage('agents',this)"><span class="icon">🤖</span>智能体管理</div>
+      <div class="nav-item" onclick="switchPage('kb',this)"><span class="icon">🧠</span>知识库检索</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">数据与知识</div>
+      <div class="nav-item"><span class="icon">📁</span>数据预处理</div>
+      <div class="nav-item"><span class="icon">📈</span>精度评估</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">系统</div>
+      <div class="nav-item"><span class="icon">⚙️</span>系统设置</div>
+    </div>
+  </div>
+  
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">智能体对话工作台</div>
+      <div class="topbar-status">
+        <span><span class="status-dot"></span>5个智能体在线</span>
+        <span>当前用户：预报员</span>
+      </div>
+    </div>
+    
+    <div class="content">
+      <!-- 对话页 -->
+      <div class="page active" id="page-chat">
+        <div class="chat-area">
+          <div class="chat-header">
+            <div class="agent-avatar">AI</div>
+            <div class="agent-info"><h3>长三角空气质量预测智能体</h3><p>多智能体协作 · 5分钟内响应 · 支持50路并发</p></div>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="msg agent">
+              <div class="msg-avatar">AI</div>
+              <div class="msg-bubble">
+                您好，我是长三角空气质量预测智能体。我可以调用全球25km、长三角9km、上海1km三级气象降尺度智能体，为您生成空气质量预报、误差归因分析和历史相似案例检索。请问需要查询什么？
+                <div class="quick-questions" style="margin-top:10px">
+                  <span class="quick-q" onclick="sendMsg('生成上海未来48小时PM2.5预测')">上海48h PM₂.₅预测</span>
+                  <span class="quick-q" onclick="sendMsg('分析上海O3预报误差原因')">O₃误差归因分析</span>
+                  <span class="quick-q" onclick="sendMsg('检索与当前天气相似的历史污染过程')">历史相似污染案例</span>
+                  <span class="quick-q" onclick="sendMsg('生成本周空气质量周报')">周报智能生成</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input">
+            <div class="input-wrap">
+              <input type="text" id="msgInput" placeholder="输入您的预报需求，如：生成上海未来72小时空气质量预报..." onkeypress="if(event.key==='Enter')sendMsg()">
+              <button class="send-btn" onclick="sendMsg()">发送</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="side-panel">
+          <div class="panel-section">
+            <h3>智能体协作流程</h3>
+            <div class="agent-flow" id="agentFlow">
+              <div class="flow-node pending" id="flow-1" onclick="showAgentDetail('global')">
+                <div class="node-icon" style="background:#6366f1">🌐</div>
+                <div class="node-info"><div class="node-name">全球25km智能体</div><div class="node-desc">0.25°全球中期预报</div></div>
+                <div class="node-status status-pending">等待</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-node pending" id="flow-2" onclick="showAgentDetail('region')">
+                <div class="node-icon" style="background:#8b5cf6">📍</div>
+                <div class="node-info"><div class="node-name">长三角9km智能体</div><div class="node-desc">区域高分辨率降尺度</div></div>
+                <div class="node-status status-pending">等待</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-node pending" id="flow-3" onclick="showAgentDetail('city')">
+                <div class="node-icon" style="background:#ec4899">🏙️</div>
+                <div class="node-info"><div class="node-name">上海1km智能体</div><div class="node-desc">城市级超高分辨率</div></div>
+                <div class="node-status status-pending">等待</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-node pending" id="flow-4" onclick="showAgentDetail('air')">
+                <div class="node-icon" style="background:#0f766e">🌫️</div>
+                <div class="node-info"><div class="node-name">空气质量预测智能体</div><div class="node-desc">多源融合+浓度预测</div></div>
+                <div class="node-status status-pending">等待</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-section">
+            <h3>数据源状态</h3>
+            <div class="data-source"><div class="ds-icon">EC</div><div class="ds-name">ECMWF 全球分析场</div><div class="ds-status">● 已接入</div></div>
+            <div class="data-source"><div class="ds-icon">NC</div><div class="ds-name">NCEP 再分析数据</div><div class="ds-status">● 已接入</div></div>
+            <div class="data-source"><div class="ds-icon">E5</div><div class="ds-name">ERA5 再分析场</div><div class="ds-status">● 已接入</div></div>
+            <div class="data-source"><div class="ds-icon">ME</div><div class="ds-name">MEIC 排放清单</div><div class="ds-status">● 已接入</div></div>
+            <div class="data-source"><div class="ds-icon">ST</div><div class="ds-name">站点监测数据</div><div class="ds-status">● 实时</div></div>
+            <div class="data-source"><div class="ds-icon">HR</div><div class="ds-name">HRCLDAS 分析场</div><div class="ds-status">● 已接入</div></div>
+          </div>
+          <div class="panel-section">
+            <h3>服务等级（SLA）</h3>
+            <div class="sla-item"><span class="sla-label">并发能力</span><span class="sla-value">50路</span></div>
+            <div class="sla-item"><span class="sla-label">区域预测响应</span><span class="sla-value">≤5分钟</span></div>
+            <div class="sla-item"><span class="sla-label">系统可用率</span><span class="sla-value">≥99.9%</span></div>
+            <div class="sla-item"><span class="sla-label">调度频率</span><span class="sla-value">逐小时</span></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 大屏页 -->
+      <div class="page" id="page-dashboard">
+        <div class="dashboard-page">
+          <div class="dash-grid">
+            <div class="dash-card"><h4>今日起报次数</h4><div class="big-num">18</div><div class="sub">↑ 逐小时起报中</div></div>
+            <div class="dash-card"><h4>平均预报耗时</h4><div class="big-num">28s</div><div class="sub">↓ 较CMAQ提升200倍+</div></div>
+            <div class="dash-card"><h4>PM₂.₅ RMSE</h4><div class="big-num">-12%</div><div class="sub">较CMAQ降低</div></div>
+            <div class="dash-card"><h4>O₃ RMSE</h4><div class="big-num">-37%</div><div class="sub">较CMAQ降低</div></div>
+          </div>
+          <div class="dash-chart">
+            <h4>上海 PM₂.₅ 逐小时预报（未来72小时）</h4>
+            <div class="chart-placeholder">
+              <div class="bar" style="height:40%" data-val="35"></div>
+              <div class="bar" style="height:55%" data-val="48"></div>
+              <div class="bar" style="height:70%" data-val="62"></div>
+              <div class="bar" style="height:85%" data-val="75"></div>
+              <div class="bar" style="height:60%" data-val="53"></div>
+              <div class="bar" style="height:45%" data-val="40"></div>
+              <div class="bar" style="height:35%" data-val="31"></div>
+              <div class="bar" style="height:50%" data-val="44"></div>
+              <div class="bar" style="height:65%" data-val="58"></div>
+              <div class="bar" style="height:75%" data-val="66"></div>
+              <div class="bar" style="height:55%" data-val="49"></div>
+              <div class="bar" style="height:40%" data-val="36"></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div class="dash-chart">
+              <h4>近30天精度趋势（RMSE）</h4>
+              <div class="trend-chart">
+                <div class="trend-bar" style="height:60%"></div>
+                <div class="trend-bar" style="height:55%"></div>
+                <div class="trend-bar" style="height:65%"></div>
+                <div class="trend-bar" style="height:50%"></div>
+                <div class="trend-bar" style="height:45%"></div>
+                <div class="trend-bar" style="height:52%"></div>
+                <div class="trend-bar highlight" style="height:40%"></div>
+                <div class="trend-bar" style="height:48%"></div>
+                <div class="trend-bar" style="height:42%"></div>
+                <div class="trend-bar" style="height:38%"></div>
+                <div class="trend-bar" style="height:45%"></div>
+                <div class="trend-bar highlight" style="height:35%"></div>
+                <div class="trend-bar" style="height:40%"></div>
+                <div class="trend-bar" style="height:36%"></div>
+              </div>
+              <div style="font-size:10px;color:#6b7280;margin-top:4px">← 30天前 &nbsp;&nbsp;&nbsp; 今天 →</div>
+            </div>
+            <div class="dash-chart">
+              <h4>多智能体任务状态</h4>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+                <div style="padding:12px;background:#f0fdfa;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:700;color:#0f766e">5</div><div style="font-size:11px;color:#6b7280">运行中</div></div>
+                <div style="padding:12px;background:#fef3c7;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:700;color:#92400e">2</div><div style="font-size:11px;color:#6b7280">排队中</div></div>
+                <div style="padding:12px;background:#d1fae5;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:700;color:#065f46">156</div><div style="font-size:11px;color:#6b7280">今日完成</div></div>
+                <div style="padding:12px;background:#fee2e2;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:700;color:#991b1b">0</div><div style="font-size:11px;color:#6b7280">失败</div></div>
+              </div>
+              <div style="margin-top:16px">
+                <div style="font-size:12px;color:#475569;margin-bottom:6px">各智能体今日任务量</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="width:80px;font-size:11px">全球25km</span><div style="flex:1;height:8px;background:#e2e8f0;border-radius:4px"><div style="width:85%;height:100%;background:#6366f1;border-radius:4px"></div></div><span style="font-size:11px;width:30px">42</span></div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="width:80px;font-size:11px">长三角9km</span><div style="flex:1;height:8px;background:#e2e8f0;border-radius:4px"><div style="width:75%;height:100%;background:#8b5cf6;border-radius:4px"></div></div><span style="font-size:11px;width:30px">38</span></div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="width:80px;font-size:11px">上海1km</span><div style="flex:1;height:8px;background:#e2e8f0;border-radius:4px"><div style="width:70%;height:100%;background:#ec4899;border-radius:4px"></div></div><span style="font-size:11px;width:30px">35</span></div>
+                <div style="display:flex;align-items:center;gap:8px"><span style="width:80px;font-size:11px">空气质量</span><div style="flex:1;height:8px;background:#e2e8f0;border-radius:4px"><div style="width:55%;height:100%;background:#0f766e;border-radius:4px"></div></div><span style="font-size:11px;width:30px">28</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 智能体管理页 -->
+      <div class="page" id="page-agents">
+        <div class="dashboard-page">
+          <div class="agent-grid">
+            <div class="agent-card" style="border-left-color:#6366f1" onclick="showAgentDetail('global')">
+              <h4 style="color:#6366f1;font-size:14px">🌐 全球25km气象预报智能体</h4>
+              <p style="font-size:12px;color:#6b7280;margin:8px 0">全球0.25°分辨率 · 7-15天中期预报 · ECMWF/NCEP多源接入</p>
+              <div style="display:flex;gap:16px;margin-top:12px;font-size:11px">
+                <span>状态：<span style="color:#10b981;font-weight:600">● 运行中</span></span>
+                <span>今日任务：42</span>
+                <span>平均耗时：12s</span>
+              </div>
+            </div>
+            <div class="agent-card" style="border-left-color:#8b5cf6" onclick="showAgentDetail('region')">
+              <h4 style="color:#8b5cf6;font-size:14px">📍 长三角9km气象降尺度智能体</h4>
+              <p style="font-size:12px;color:#6b7280;margin:8px 0">长三角区域9km高分辨率 · AI降尺度 · 订阅上游25km场</p>
+              <div style="display:flex;gap:16px;margin-top:12px;font-size:11px">
+                <span>状态：<span style="color:#10b981;font-weight:600">● 运行中</span></span>
+                <span>今日任务：38</span>
+                <span>平均耗时：18s</span>
+              </div>
+            </div>
+            <div class="agent-card" style="border-left-color:#ec4899" onclick="showAgentDetail('city')">
+              <h4 style="color:#ec4899;font-size:14px">🏙️ 上海市1km气象降尺度智能体</h4>
+              <p style="font-size:12px;color:#6b7280;margin:8px 0">上海1km超高分辨率 · 城市微尺度叠加 · 行政区划过滤</p>
+              <div style="display:flex;gap:16px;margin-top:12px;font-size:11px">
+                <span>状态：<span style="color:#10b981;font-weight:600">● 运行中</span></span>
+                <span>今日任务：35</span>
+                <span>平均耗时：25s</span>
+              </div>
+            </div>
+            <div class="agent-card" style="border-left-color:#0f766e" onclick="showAgentDetail('air')">
+              <h4 style="color:#0f766e;font-size:14px">🌫️ 长三角空气质量预测智能体</h4>
+              <p style="font-size:12px;color:#6b7280;margin:8px 0">ERA5+FuXi+MEIC+站点多源融合 · 5分钟内区域预测</p>
+              <div style="display:flex;gap:16px;margin-top:12px;font-size:11px">
+                <span>状态：<span style="color:#10b981;font-weight:600">● 运行中</span></span>
+                <span>今日任务：28</span>
+                <span>平均耗时：4min32s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 知识库检索页 -->
+      <div class="page" id="page-kb">
+        <div class="kb-page">
+          <div class="kb-search">
+            <input type="text" placeholder="搜索知识库：污染过程、气象因子、排放清单、技术规范..." value="冬季PM2.5污染过程">
+            <div class="kb-filters">
+              <span class="kb-filter active">全部</span>
+              <span class="kb-filter">历史污染案例</span>
+              <span class="kb-filter">技术规范</span>
+              <span class="kb-filter">气象知识</span>
+              <span class="kb-filter">排放清单</span>
+              <span class="kb-filter">科研文献</span>
+            </div>
+          </div>
+          <div class="kb-result">
+            <div class="kb-title">2024年12月长三角区域重污染过程分析报告</div>
+            <div class="kb-source">来源：历史污染案例库 · 更新时间：2025-01-15 · 类型：污染过程</div>
+            <div class="kb-snippet">2024年12月25-28日，长三角地区经历一次持续性PM₂.₅重污染过程，峰值浓度达186μg/m³。主要成因为静稳天气叠加区域传输，主导风向为西北风，污染物从华北地区传输至长三角...</div>
+            <div class="kb-tags"><span class="kb-tag">PM₂.₅</span><span class="kb-tag">区域传输</span><span class="kb-tag">静稳天气</span><span class="kb-tag">冬季</span></div>
+          </div>
+          <div class="kb-result">
+            <div class="kb-title">上海市重污染天气应急预案（2024版）</div>
+            <div class="kb-source">来源：技术规范库 · 更新时间：2024-10-01 · 类型：技术规范</div>
+            <div class="kb-snippet">规定了重污染天气分级标准（蓝色/黄色/橙色/红色四级预警），以及对应级别下的应急减排措施，包括工业源、移动源、扬尘源的管控要求...</div>
+            <div class="kb-tags"><span class="kb-tag">应急预案</span><span class="kb-tag">减排措施</span><span class="kb-tag">分级预警</span></div>
+          </div>
+          <div class="kb-result">
+            <div class="kb-title">长三角地区冬季PM₂.₅污染气象成因研究</div>
+            <div class="kb-source">来源：科研文献库 · 更新时间：2024-06-20 · 类型：科研文献</div>
+            <div class="kb-snippet">研究表明，长三角冬季PM₂.₅污染与500hPa环流形势密切相关，当东亚大槽偏弱、副热带高压偏北时，易形成静稳天气，导致污染物累积...</div>
+            <div class="kb-tags"><span class="kb-tag">气象成因</span><span class="kb-tag">环流形势</span><span class="kb-tag">PM₂.₅</span></div>
+          </div>
+          <div class="kb-result">
+            <div class="kb-title">MEIC 2022年长三角地区排放清单</div>
+            <div class="kb-source">来源：排放清单库 · 更新时间：2024-03-01 · 类型：排放清单</div>
+            <div class="kb-snippet">包含长三角地区电力、工业、交通、居民等部门的SO₂、NOx、PM₂.₅、VOCs、NH₃等污染物排放量，空间分辨率0.25°，时间分辨率为月度...</div>
+            <div class="kb-tags"><span class="kb-tag">MEIC</span><span class="kb-tag">排放清单</span><span class="kb-tag">长三角</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 智能体详情弹窗 -->
+<div class="modal-overlay" id="agentModal">
+  <div class="modal">
+    <span class="modal-close" onclick="closeModal()">×</span>
+    <h3 id="modalTitle">智能体详情</h3>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div class="proto-note">高保真原型 · 可直接参考在 Axure 中搭建</div>
+
+<script>
+const agentData = {
+  global: {name:'全球25km气象预报智能体',role:'全球0.25°分辨率7-15天中期数值天气预报专家',resolution:'0.25°（约25km）',forecastRange:'7-15天',tasks:42,avgTime:'12秒',status:'运行中',inputs:'ECMWF / NCEP 全球分析场',outputs:'全球气象预报场（Zarr格式）',sla:'50路并发，任务级权限隔离'},
+  region: {name:'长三角9km气象降尺度智能体',role:'长三角区域9km高分辨率气象降尺度专家',resolution:'9km',forecastRange:'7-15天',tasks:38,avgTime:'18秒',status:'运行中',inputs:'上游25km全球场 + 静态地理数据',outputs:'长三角9km气象降尺度场',sla:'50路并发，优先级隔离'},
+  city: {name:'上海市1km气象降尺度智能体',role:'上海市1km超高分辨率城市气象降尺度服务终端',resolution:'1km',forecastRange:'72小时',tasks:35,avgTime:'25秒',status:'运行中',inputs:'上游9km区域场 + 城市微尺度数据',outputs:'上海1km气象降尺度场',sla:'50路并发，细粒度权限控制'},
+  air: {name:'长三角空气质量预测智能体',role:'长三角区域空气质量预测与分析助手',resolution:'9km/1km',forecastRange:'48-72小时',tasks:28,avgTime:'4分32秒',status:'运行中',inputs:'三级气象预报 + ERA5 + MEIC/CAMS + 站点监测',outputs:'空气质量浓度预报 + 热力图',sla:'区域多站点预测≤5分钟'}
+};
+
+function showAgentDetail(key){
+  const d = agentData[key];
+  document.getElementById('modalTitle').textContent = d.name;
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-row"><span class="label">智能体角色</span><span class="value">${d.role}</span></div>
+    <div class="modal-row"><span class="label">空间分辨率</span><span class="value">${d.resolution}</span></div>
+    <div class="modal-row"><span class="label">预报时效</span><span class="value">${d.forecastRange}</span></div>
+    <div class="modal-row"><span class="label">输入数据</span><span class="value">${d.inputs}</span></div>
+    <div class="modal-row"><span class="label">输出产品</span><span class="value">${d.outputs}</span></div>
+    <div class="modal-row"><span class="label">今日任务数</span><span class="value">${d.tasks}</span></div>
+    <div class="modal-row"><span class="label">平均耗时</span><span class="value">${d.avgTime}</span></div>
+    <div class="modal-row"><span class="label">运行状态</span><span class="value" style="color:#10b981">● ${d.status}</span></div>
+    <div class="modal-row"><span class="label">SLA</span><span class="value">${d.sla}</span></div>
+  `;
+  document.getElementById('agentModal').classList.add('show');
+}
+function closeModal(){document.getElementById('agentModal').classList.remove('show')}
+document.getElementById('agentModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+
+function switchPage(page, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  const titles={chat:'智能体对话工作台',dashboard:'预报大屏监控',agents:'智能体管理',kb:'知识库检索'};
+  document.getElementById('pageTitle').textContent=titles[page];
+}
+
+function sendMsg(text){
+  const input=document.getElementById('msgInput');
+  const msg=text||input.value;
+  if(!msg.trim())return;
+  input.value='';
+  const chatDiv=document.getElementById('chatMessages');
+  chatDiv.innerHTML+=`<div class="msg user"><div class="msg-avatar">我</div><div class="msg-bubble">${msg}</div></div>`;
+  
+  setTimeout(()=>{
+    let response='';
+    if(msg.includes('误差')||msg.includes('归因')){
+      response=`<div style="margin:8px 0;">正在为您进行O₃预报误差归因分析，调用多智能体协作：</div>
+        <div class="agent-step"><div class="step-num">1</div><div class="step-text"><span class="highlight">数据收集</span>：获取近30天O₃预报与实测数据</div></div>
+        <div class="agent-step"><div class="step-num">2</div><div class="step-text"><span class="highlight">气象误差拆解</span>：伏羲气象误差评估模块分析气象输入偏差</div></div>
+        <div class="agent-step"><div class="step-num">3</div><div class="step-text"><span class="highlight">污染物误差拆解</span>：分离气象贡献与化学过程贡献</div></div>
+        <div class="agent-step"><div class="step-num">4</div><div class="step-text"><span class="highlight">偏差修正建议</span>：输出系统偏差修正方向与量级</div></div>
+        <div class="error-breakdown">
+          <h5>📊 误差归因结果</h5>
+          <div class="error-row"><span>气象输入误差贡献</span><span style="font-weight:600">62%</span></div>
+          <div class="error-row"><span>化学过程误差贡献</span><span style="font-weight:600">28%</span></div>
+          <div class="error-row"><span>排放清单误差贡献</span><span style="font-weight:600">10%</span></div>
+          <div style="margin-top:8px;font-size:11px;color:#92400e">💡 修正建议：O₃预报在午后时段存在系统性低估，建议上修15%-20%；主要原因是气象模型对边界层高度的低估。</div>
+        </div>`;
+    } else if(msg.includes('相似')||msg.includes('案例')||msg.includes('历史')){
+      response=`<div style="margin:8px 0;">正在检索历史相似污染过程（多变量匹配：污染物4指标+气象UV风+季节约束）：</div>
+        <div class="case-item"><div class="case-title">2024年12月25-28日 长三角重污染过程</div><div class="case-meta">PM₂.₅峰值186μg/m³ · 静稳天气 · 西北风区域传输</div><div class="case-sim">相似度：87%</div></div>
+        <div class="case-item"><div class="case-title">2023年1月10-13日 冬季污染过程</div><div class="case-meta">PM₂.₅峰值165μg/m³ · 逆温层 · 累积型污染</div><div class="case-sim">相似度：76%</div></div>
+        <div class="case-item"><div class="case-title">2024年1月5-8日 跨区域传输污染</div><div class="case-meta">PM₂.₅峰值152μg/m³ · 华北传输 · 快速清除</div><div class="case-sim">相似度：71%</div></div>`;
+    } else if(msg.includes('周报')||msg.includes('报告')){
+      response=`<div style="margin:8px 0;">正在基于知识库与模型结果智能生成周报：</div>
+        <div class="result-card"><h4>📄 上海市空气质量周报（2026.09.01-09.07）</h4>
+          <div style="font-size:12px;line-height:1.8;color:#374151">
+            <b>一、本周空气质量概况</b><br>本周上海市AQI均值为68，优良天数6天，轻度污染1天（9月3日，O₃超标）。<br><br>
+            <b>二、首要污染物分析</b><br>本周首要污染物为O₃，占比71%；PM₂.₅占比29%。O₃日变化峰值出现在14:00-16:00。<br><br>
+            <b>三、气象条件分析</b><br>本周受副热带高压控制，气温偏高（平均28℃），辐射强，有利于O₃生成。<br><br>
+            <b>四、下周趋势预判</b><br>预计下周空气质量以良为主，9月10日前后可能有一次PM₂.₅轻度污染过程。
+          </div>
+        </div>`;
+    } else {
+      response=`<div style="margin:8px 0;">正在为您生成预报结果，调用多智能体协作流程：</div>
+        <div class="agent-step"><div class="step-num">1</div><div class="step-text"><span class="highlight">全球25km智能体</span>：拉取ECMWF/NCEP数据，生成0.25°全球7-15天预报</div></div>
+        <div class="agent-step"><div class="step-num">2</div><div class="step-text"><span class="highlight">长三角9km智能体</span>：AI降尺度至9km区域分辨率</div></div>
+        <div class="agent-step"><div class="step-num">3</div><div class="step-text"><span class="highlight">上海1km智能体</span>：叠加城市微尺度数据，降尺度至1km</div></div>
+        <div class="agent-step"><div class="step-num">4</div><div class="step-text"><span class="highlight">空气质量预测智能体</span>：多源融合，生成PM₂.₅浓度预测</div></div>
+        <div class="result-card"><h4>📊 预报结果摘要</h4><div class="result-metrics"><div class="metric"><div class="metric-val">75μg/m³</div><div class="metric-label">峰值浓度</div></div><div class="metric"><div class="metric-val">T+18h</div><div class="metric-label">峰值时间</div></div><div class="metric"><div class="metric-val">轻度</div><div class="metric-label">污染等级</div></div></div></div>`;
+    }
+    chatDiv.innerHTML+=`<div class="msg agent"><div class="msg-avatar">AI</div><div class="msg-bubble">${response}</div></div>`;
+    chatDiv.scrollTop=chatDiv.scrollHeight;
+    
+    const steps=[{id:'flow-1'},{id:'flow-2'},{id:'flow-3'},{id:'flow-4'}];
+    steps.forEach((s,i)=>{
+      setTimeout(()=>{
+        const node=document.getElementById(s.id);
+        if(!node)return;
+        node.classList.remove('pending');node.classList.add('active');
+        node.querySelector('.node-status').className='node-status status-running';
+        node.querySelector('.node-status').textContent='运行中';
+        setTimeout(()=>{
+          node.classList.remove('active');node.classList.add('done');
+          node.querySelector('.node-status').className='node-status status-done';
+          node.querySelector('.node-status').textContent='完成';
+        },800);
+      },i*600);
+    });
+  },500);
+  chatDiv.scrollTop=chatDiv.scrollHeight;
+}
+</script>
+</body>
+</html>
